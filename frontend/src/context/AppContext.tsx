@@ -65,18 +65,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [activeAlerts, setActiveAlerts] = useState<AlertItem[]>(fallbackOverviewData.active_alerts);
   const [heatwaveSimulated, setHeatwaveSimulated] = useState<boolean>(false);
   
-  // Auth state
-  const [currentUser, setCurrentUser] = useState<User | null>(() => {
-    try {
-      const saved = localStorage.getItem('sahayya_user');
-      return saved ? JSON.parse(saved) : null;
-    } catch {
-      return null;
-    }
-  });
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    return !!localStorage.getItem('sahayya_token') || !!localStorage.getItem('sahayya_user');
-  });
+  // Auth state - Always open on login page first
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   
   const [userRole, setUserRole] = useState<string>(() => {
     try {

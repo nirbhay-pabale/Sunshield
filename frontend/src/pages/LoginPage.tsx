@@ -18,7 +18,10 @@ import {
   Building2, 
   X,
   Sparkles,
-  ChevronDown
+  ChevronDown,
+  KeyRound,
+  Shield,
+  Activity
 } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
@@ -33,9 +36,10 @@ export const LoginPage: React.FC = () => {
   const [forgotEmail, setForgotEmail] = useState<string>('');
   const [forgotMessage, setForgotMessage] = useState<string | null>(null);
 
-  // Sign in form state
-  const [email, setEmail] = useState<string>('officer@sahayya.ai');
+  // Sign in form state (supports User ID or Email)
+  const [identifier, setIdentifier] = useState<string>('OFFICER-HQ-01');
   const [password, setPassword] = useState<string>('sahayya123');
+  const [selectedDemoRole, setSelectedDemoRole] = useState<string>('Disaster HQ (Command)');
 
   // Register form state
   const [regName, setRegName] = useState<string>('');
@@ -60,11 +64,13 @@ export const LoginPage: React.FC = () => {
     'Katraj-Bibwewadi, Pune'
   ];
 
-  // Quick Demo Account Auto-Fill
-  const handleQuickDemo = (demoEmail: string, demoPass: string) => {
-    setEmail(demoEmail);
+  // Quick Demo Account Auto-Fill with differentiated role profiles
+  const handleQuickDemo = (demoId: string, demoPass: string, roleLabel: string) => {
+    setIdentifier(demoId);
     setPassword(demoPass);
+    setSelectedDemoRole(roleLabel);
     setErrorMessage(null);
+    setSuccessMessage(null);
   };
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -72,20 +78,21 @@ export const LoginPage: React.FC = () => {
     setErrorMessage(null);
     setSuccessMessage(null);
 
-    if (!email.trim()) {
-      setErrorMessage('Please enter your email address.');
+    const cleanIdentifier = identifier.trim();
+    if (!cleanIdentifier) {
+      setErrorMessage('Please enter your authorized User ID or Email Address.');
       return;
     }
-    if (!password) {
-      setErrorMessage('Please enter your password.');
+    if (!password.trim()) {
+      setErrorMessage('Please enter your account password.');
       return;
     }
 
     setIsLoading(true);
     try {
-      const res = await login(email.trim(), password, rememberMe);
+      const res = await login(cleanIdentifier, password.trim(), rememberMe);
       if (!res.success) {
-        setErrorMessage(res.message || 'Invalid email or password.');
+        setErrorMessage(res.message || 'Invalid User ID / Email or Password.');
       }
     } catch (err: any) {
       setErrorMessage(err.message || 'Error signing in. Please check your credentials.');
@@ -104,7 +111,7 @@ export const LoginPage: React.FC = () => {
       return;
     }
     if (!regEmail.trim() || !regEmail.includes('@') || !regEmail.includes('.')) {
-      setErrorMessage('Please enter a valid email address.');
+      setErrorMessage('Please enter a valid official email address.');
       return;
     }
     if (regPassword.length < 6) {
@@ -141,56 +148,51 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const handleGoogleLogin = async () => {
-    setIsLoading(true);
-    try {
-      await login('officer@sahayya.ai', 'sahayya123', true);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleForgotSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!forgotEmail.trim() || !forgotEmail.includes('@')) {
-      setForgotMessage('Please provide a valid email address.');
+      setForgotMessage('Please provide a valid registered email address.');
       return;
     }
-    const res = await forgotPassword(forgotEmail.trim());
-    setForgotMessage(res.message || `Password reset link dispatched to ${forgotEmail}.`);
+    try {
+      const res = await forgotPassword(forgotEmail.trim());
+      setForgotMessage(res.message || `Password reset link dispatched to ${forgotEmail}.`);
+    } catch (err: any) {
+      setForgotMessage(err.message || 'Unable to process reset request.');
+    }
   };
 
   return (
     <div 
       className="relative min-h-screen w-full flex flex-col justify-between bg-cover bg-center font-sans overflow-x-hidden"
       style={{
-        backgroundImage: `linear-gradient(to right, rgba(240, 247, 243, 0.92) 0%, rgba(240, 247, 243, 0.75) 45%, rgba(240, 247, 243, 0.88) 100%), url('/login_bg.jpg')`,
+        backgroundImage: `linear-gradient(to right, rgba(240, 247, 243, 0.94) 0%, rgba(240, 247, 243, 0.78) 45%, rgba(240, 247, 243, 0.90) 100%), url('/login_bg.jpg')`,
         backgroundAttachment: 'fixed',
         backgroundSize: 'cover'
       }}
     >
       {/* Top Header Bar */}
       <header className="w-full max-w-7xl mx-auto px-6 py-5 flex items-center justify-between z-20">
-        {/* SUNSHIELD Brand Logo (Unbordered & Seamlessly Blended) */}
-        <div className="flex items-center gap-3.5">
-          <div className="w-13 h-13 flex items-center justify-center shrink-0">
+        {/* SAHAYYA.AI Brand Header (Clean, Compact & Borderless) */}
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 flex items-center justify-center shrink-0">
             <img 
               src="/sunshield_logo.png" 
-              alt="SUNSHIELD" 
+              alt="SAHAYYA.AI" 
               className="w-full h-full object-contain"
             />
           </div>
           <div>
             <h1 className="font-display text-[24px] font-bold text-[#143d2b] tracking-tight leading-[1.1]">
-              SUNSHIELD
+              SAHAYYA.AI
             </h1>
-            <p className="font-sans text-[11px] text-[#39624f] font-normal leading-[1.4] mt-0.5">
-              Heat & Climate Health Intelligence System
+            <p className="font-sans text-[11px] text-[#4d6e5e] font-normal leading-[1.4] mt-0.5">
+              Safer Today. Healthier Tomorrow.
             </p>
           </div>
         </div>
 
-        {/* Top Right Quick Badges */}
+        {/* Top Right Header Pills */}
         <div className="flex items-center gap-3 font-sans">
           {/* Location Selector Pill */}
           <div className="relative">
@@ -238,13 +240,13 @@ export const LoginPage: React.FC = () => {
       {/* Main Content Body */}
       <main className="w-full max-w-7xl mx-auto px-6 py-6 md:py-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center flex-1 z-10 font-sans">
         
-        {/* Left Hero Section (5 Feature Pillars & Taglines) */}
+        {/* Left Hero Section (5 Feature Badges & Tagline) */}
         <div className="lg:col-span-7 space-y-6 md:space-y-8">
           
           <div className="space-y-3">
             <div className="inline-flex items-center gap-2 bg-[#1b4d3e]/10 border border-[#1b4d3e]/20 px-3.5 py-1.5 rounded-full text-[11px] font-semibold text-[#1b4d3e] tracking-widest uppercase">
               <Sparkles className="w-3.5 h-3.5 text-[#236c43]" />
-              <span>Heat Risk Intelligence</span>
+              <span>HEAT RISK INTELLIGENCE</span>
             </div>
 
             <h2 className="font-display text-4xl sm:text-5xl lg:text-[48px] font-semibold text-[#0e3020] tracking-[-0.02em] leading-[1.1]">
@@ -257,7 +259,7 @@ export const LoginPage: React.FC = () => {
             </p>
           </div>
 
-          {/* 5 Feature Highlight Badges Row */}
+          {/* 5 Feature Highlight Cards */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 pt-2">
             
             {/* Feature 1 */}
@@ -312,7 +314,7 @@ export const LoginPage: React.FC = () => {
 
           </div>
 
-          {/* Inspirational Tagline using Space Grotesk */}
+          {/* Inspirational Tagline */}
           <div className="pt-4">
             <p className="font-display text-2xl sm:text-3xl text-[#184d34] font-medium italic drop-shadow-xs select-none">
               "A safer, healthier future is possible."
@@ -321,7 +323,7 @@ export const LoginPage: React.FC = () => {
 
         </div>
 
-        {/* Right Glassmorphic Card (Sign In & Register) */}
+        {/* Right Glassmorphic Login / Register Card */}
         <div className="lg:col-span-5 w-full max-w-md mx-auto">
           
           <div className="bg-white/95 backdrop-blur-xl rounded-[28px] border border-white/80 shadow-[0_20px_50px_rgba(20,61,43,0.15)] p-7 sm:p-9 transition-all">
@@ -357,21 +359,25 @@ export const LoginPage: React.FC = () => {
             {mode === 'signin' ? (
               <form onSubmit={handleSignIn} className="space-y-4 font-sans">
                 
-                {/* Email Address */}
+                {/* User ID or Email Address */}
                 <div>
-                  <label className="block text-[13px] font-medium text-[#1b4d3e] mb-1.5">
-                    Email Address
+                  <label className="block text-[13px] font-medium text-[#1b4d3e] mb-1.5 flex items-center justify-between">
+                    <span>User ID / Email Address</span>
+                    <span className="text-[11px] text-[#5c7a6b] font-normal">Authorized ID</span>
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#718f80]">
-                      <Mail className="w-4 h-4" />
+                      <KeyRound className="w-4 h-4" />
                     </div>
                     <input
-                      type="email"
+                      type="text"
                       required
-                      value={email}
-                      onChange={e => setEmail(e.target.value)}
-                      placeholder="Enter your email address"
+                      value={identifier}
+                      onChange={e => {
+                        setIdentifier(e.target.value);
+                        setErrorMessage(null);
+                      }}
+                      placeholder="e.g. OFFICER-HQ-01 or officer@sahayya.ai"
                       className="w-full bg-[#fbfdfb] border border-[#d2e2d6] focus:border-[#236c43] focus:ring-2 focus:ring-[#236c43]/15 rounded-xl pl-10 pr-4 py-2.5 text-[14px] font-normal text-[#143d2b] placeholder:text-[13px] placeholder-[#8ca497] outline-none transition-all"
                     />
                   </div>
@@ -390,8 +396,11 @@ export const LoginPage: React.FC = () => {
                       type={showPassword ? 'text' : 'password'}
                       required
                       value={password}
-                      onChange={e => setPassword(e.target.value)}
-                      placeholder="Enter your password"
+                      onChange={e => {
+                        setPassword(e.target.value);
+                        setErrorMessage(null);
+                      }}
+                      placeholder="Enter your account password"
                       className="w-full bg-[#fbfdfb] border border-[#d2e2d6] focus:border-[#236c43] focus:ring-2 focus:ring-[#236c43]/15 rounded-xl pl-10 pr-10 py-2.5 text-[14px] font-normal text-[#143d2b] placeholder:text-[13px] placeholder-[#8ca497] outline-none transition-all"
                     />
                     <button
@@ -441,55 +450,88 @@ export const LoginPage: React.FC = () => {
                   )}
                 </button>
 
-                {/* Divider */}
-                <div className="relative flex py-2 items-center">
-                  <div className="flex-grow border-t border-[#e2ece5]" />
-                  <span className="flex-shrink mx-3 text-[11px] font-medium text-[#799889]">or</span>
-                  <div className="flex-grow border-t border-[#e2ece5]" />
-                </div>
+                {/* Differentiated Quick Demo Role Switcher */}
+                <div className="pt-3 border-t border-[#edf4ee]">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[11px] font-semibold text-[#718f80] uppercase tracking-wider">
+                      Quick Demo Credentials
+                    </span>
+                    <span className="text-[11px] font-medium text-[#236c43] bg-[#eaf4ec] px-2 py-0.5 rounded-full">
+                      {selectedDemoRole}
+                    </span>
+                  </div>
 
-                {/* Continue with Google */}
-                <button
-                  type="button"
-                  onClick={handleGoogleLogin}
-                  disabled={isLoading}
-                  className="w-full bg-white hover:bg-[#f8faf8] border border-[#d2e2d6] text-[#2a4537] py-2.5 px-4 rounded-xl text-[13px] font-medium flex items-center justify-center gap-2.5 shadow-2xs hover:border-[#b8d6c0] transition-all cursor-pointer"
-                >
-                  <svg className="w-4 h-4" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-                  </svg>
-                  <span>Continue with Google</span>
-                </button>
+                  <div className="grid grid-cols-2 gap-2 text-[12px]">
+                    <button
+                      type="button"
+                      onClick={() => handleQuickDemo('OFFICER-HQ-01', 'sahayya123', 'Disaster HQ (Command)')}
+                      className={`p-2 rounded-xl border text-left transition-all cursor-pointer ${
+                        identifier === 'OFFICER-HQ-01' || identifier === 'officer@sahayya.ai'
+                          ? 'bg-[#1b4d3e] text-white border-[#1b4d3e] shadow-xs'
+                          : 'bg-[#f0f7f2] hover:bg-[#e2f0e6] border-[#d2e6d8] text-[#1b4d3e]'
+                      }`}
+                    >
+                      <div className="font-semibold flex items-center justify-between">
+                        <span>Disaster HQ</span>
+                        <Shield className="w-3 h-3 opacity-80" />
+                      </div>
+                      <div className={`text-[10px] mt-0.5 ${identifier === 'OFFICER-HQ-01' ? 'text-white/80' : 'text-[#4e7060]'}`}>
+                        OFFICER-HQ-01
+                      </div>
+                    </button>
 
-                {/* 1-Click Quick Demo Switcher */}
-                <div className="pt-2.5 border-t border-[#edf4ee]">
-                  <p className="text-[11px] font-semibold text-[#718f80] uppercase tracking-wider mb-2 text-center">
-                    Quick Demo Credentials
-                  </p>
-                  <div className="grid grid-cols-3 gap-2 text-[12px]">
                     <button
                       type="button"
-                      onClick={() => handleQuickDemo('officer@sahayya.ai', 'sahayya123')}
-                      className="p-2 bg-[#f0f7f2] hover:bg-[#e2f0e6] border border-[#d2e6d8] rounded-xl font-semibold text-[#1b4d3e] text-center transition-colors cursor-pointer"
+                      onClick={() => handleQuickDemo('WARD-OFFICER-PUNE', 'sahayya123', 'Ward Officer (Local)')}
+                      className={`p-2 rounded-xl border text-left transition-all cursor-pointer ${
+                        identifier === 'WARD-OFFICER-PUNE' || identifier === 'ward.officer@sahayya.ai'
+                          ? 'bg-[#1b4d3e] text-white border-[#1b4d3e] shadow-xs'
+                          : 'bg-[#f0f7f2] hover:bg-[#e2f0e6] border-[#d2e6d8] text-[#1b4d3e]'
+                      }`}
                     >
-                      Disaster HQ
+                      <div className="font-semibold flex items-center justify-between">
+                        <span>Ward Officer</span>
+                        <Building2 className="w-3 h-3 opacity-80" />
+                      </div>
+                      <div className={`text-[10px] mt-0.5 ${identifier === 'WARD-OFFICER-PUNE' ? 'text-white/80' : 'text-[#4e7060]'}`}>
+                        WARD-OFFICER-PUNE
+                      </div>
                     </button>
+
                     <button
                       type="button"
-                      onClick={() => handleQuickDemo('ward@sahayya.ai', 'sahayya123')}
-                      className="p-2 bg-[#f0f7f2] hover:bg-[#e2f0e6] border border-[#d2e6d8] rounded-xl font-semibold text-[#1b4d3e] text-center transition-colors cursor-pointer"
+                      onClick={() => handleQuickDemo('HEALTH-DIR-09', 'sahayya123', 'Health Officer (Surge)')}
+                      className={`p-2 rounded-xl border text-left transition-all cursor-pointer ${
+                        identifier === 'HEALTH-DIR-09' || identifier === 'health.director@sahayya.ai'
+                          ? 'bg-[#1b4d3e] text-white border-[#1b4d3e] shadow-xs'
+                          : 'bg-[#f0f7f2] hover:bg-[#e2f0e6] border-[#d2e6d8] text-[#1b4d3e]'
+                      }`}
                     >
-                      Ward Officer
+                      <div className="font-semibold flex items-center justify-between">
+                        <span>Health Officer</span>
+                        <Activity className="w-3 h-3 opacity-80" />
+                      </div>
+                      <div className={`text-[10px] mt-0.5 ${identifier === 'HEALTH-DIR-09' ? 'text-white/80' : 'text-[#4e7060]'}`}>
+                        HEALTH-DIR-09
+                      </div>
                     </button>
+
                     <button
                       type="button"
-                      onClick={() => handleQuickDemo('citizen@sahayya.ai', 'sahayya123')}
-                      className="p-2 bg-[#f0f7f2] hover:bg-[#e2f0e6] border border-[#d2e6d8] rounded-xl font-semibold text-[#1b4d3e] text-center transition-colors cursor-pointer"
+                      onClick={() => handleQuickDemo('CITIZEN-PUNE-88', 'sahayya123', 'Citizen Observer')}
+                      className={`p-2 rounded-xl border text-left transition-all cursor-pointer ${
+                        identifier === 'CITIZEN-PUNE-88' || identifier === 'citizen@sahayya.ai'
+                          ? 'bg-[#1b4d3e] text-white border-[#1b4d3e] shadow-xs'
+                          : 'bg-[#f0f7f2] hover:bg-[#e2f0e6] border-[#d2e6d8] text-[#1b4d3e]'
+                      }`}
                     >
-                      Citizen User
+                      <div className="font-semibold flex items-center justify-between">
+                        <span>Citizen User</span>
+                        <Users className="w-3 h-3 opacity-80" />
+                      </div>
+                      <div className={`text-[10px] mt-0.5 ${identifier === 'CITIZEN-PUNE-88' ? 'text-white/80' : 'text-[#4e7060]'}`}>
+                        CITIZEN-PUNE-88
+                      </div>
                     </button>
                   </div>
                 </div>
@@ -578,7 +620,7 @@ export const LoginPage: React.FC = () => {
                     >
                       <option value="Disaster Management Officer">Disaster Officer</option>
                       <option value="Municipal Ward Officer">Ward Officer</option>
-                      <option value="Healthcare / First Responder">First Responder</option>
+                      <option value="Public Health Officer">Health Officer</option>
                       <option value="Citizen Observer">Citizen Observer</option>
                     </select>
                   </div>
@@ -713,7 +755,7 @@ export const LoginPage: React.FC = () => {
 
       {/* Footer */}
       <footer className="w-full max-w-7xl mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-between text-[11px] text-[#4d705f] font-medium z-10 border-t border-black/5">
-        <p>© 2026 SUNSHIELD — Heat & Climate Health Intelligence System</p>
+        <p>© 2026 SAHAYYA.AI — Heat Risk Intelligence & Decision Support Platform</p>
         <div className="flex items-center gap-4 mt-2 sm:mt-0">
           <span>NDMA CAP v1.2 Compliant</span>
           <span>•</span>
@@ -766,14 +808,14 @@ export const LoginPage: React.FC = () => {
               <div className="flex items-center gap-2 pt-1">
                 <button
                   type="submit"
-                  className="flex-1 bg-[#1b4d3e] hover:bg-[#143d2b] text-white py-2 rounded-xl text-xs font-bold shadow-xs transition-all"
+                  className="flex-1 bg-[#1b4d3e] hover:bg-[#143d2b] text-white py-2 rounded-xl text-xs font-bold shadow-xs transition-all cursor-pointer"
                 >
                   Send Reset Link
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowForgotModal(false)}
-                  className="px-3 py-2 bg-[#f4f7f4] hover:bg-[#e5ece6] text-[#2a4537] rounded-xl text-xs font-bold transition-all"
+                  className="px-3 py-2 bg-[#f4f7f4] hover:bg-[#e5ece6] text-[#2a4537] rounded-xl text-xs font-bold transition-all cursor-pointer"
                 >
                   Close
                 </button>
