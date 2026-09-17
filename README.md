@@ -45,55 +45,6 @@
 
 ---
 
-## 🚀 Quickstart & Setup Guide
-
-### 1. Prerequisites
-- **Node.js**: v18.0 or higher
-- **Python**: v3.10 or higher
-- **Git**
-
-### 2. Clone the Repository
-```bash
-git clone https://github.com/nirbhay-pabale/Sunshield.git
-cd Sunshield
-```
-
-### 3. Backend Setup & Run
-```bash
-# Navigate to backend directory or run from root
-cd backend
-pip install -r requirements.txt
-
-# Run FastAPI Dev Server
-python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
-```
-*Interactive API Swagger documentation is available at:* `http://127.0.0.1:8000/docs`
-
-### 4. Frontend Setup & Run
-```bash
-# In a separate terminal, navigate to frontend directory
-cd frontend
-npm install
-npm run dev
-```
-*Open your browser and navigate to:* `http://localhost:5173`
-
----
-
-## 🧪 Testing
-
-To execute the backend test suite:
-```bash
-pytest backend/tests/
-```
-
-To build the frontend for production:
-```bash
-cd frontend
-npm run build
-```
-
----
 
 ## 📜 License
 This project is developed for Municipal Disaster Management, Climate Resilience, and Smart City Innovation.
